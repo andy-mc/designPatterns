@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "tsc:w" : "npx tsc -w",
     "start:dev:ts": "nodemon --watch 'dist/**/*' -e js --exec 'node ./dist/index.js'",
-    "start:dev:file:ts": "nodemon --watch 'dist/${npm_config_filepath}' -e js --exec 'node ./dist/${npm_config_filepath}'"
+    "start:dev:file:ts": "nodemon --watch 'dist/**/*' -e js --exec 'node ./dist/${npm_config_filepath}'"
   },
   "author": "",
   "license": "ISC",
