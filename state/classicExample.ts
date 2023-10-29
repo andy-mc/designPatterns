@@ -31,7 +31,7 @@ class OffState extends State {
 
 class Switch {
     constructor(
-      private state: State = new OffState()
+      public state: State = new OffState()
     ) {}
 
     public on() {
