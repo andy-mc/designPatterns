@@ -1,0 +1,14 @@
+{
+    "defaultSeverity": "error",
+    "extends": [
+        "tslint-config-airbnb",
+        "tslint-config-prettier"
+    ],
+    "rules": {
+    "indent": [true, "spaces"],
+    "quotemark": [true, "double"],
+    "semicolon": [true, "always"],
+    "no-console": true
+    }
+}
+  

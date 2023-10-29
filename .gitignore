@@ -1,0 +1,33 @@
+# Directorios de compilación
+dist/
+build/
+out/
+
+# Archivos de logs
+*.log
+
+# Archivos de runtime
+*.pid
+*.seed
+*.log
+
+# Directorio de dependencias
+node_modules/
+
+# IDEs y editores
+.vscode/
+.idea/
+*.iml
+*.project
+*.class
+*.swp
+*.swo
+*.swn
+*.bak
+*.orig
+*.rej
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
