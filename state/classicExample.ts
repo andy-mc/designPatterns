@@ -1,46 +1,52 @@
 abstract class State {
-    public on(sw: Switch) {
-      console.log('Light is already on');
-    };
-    public off(sw: Switch) {
-      console.log('Light is already off');
-    }
+  abstract on(sw: Switch): void;
+  abstract off(sw: Switch): void;
 }
 
 class OnState extends State {
-    constructor() {
-      super();
-      console.log('Light enter turned on state');
-    }
-    public off(sw: Switch) {
-      console.log('Switching off...');
-      sw.state = new OffState();
-    }
+  on(sw: Switch): void {
+    console.log('Light is already on');
+  }
+
+  off(sw: Switch): void {
+    console.log('Switching off...');
+    sw.changeState(new OffState());
+  }
 }
 
 class OffState extends State {
-    constructor() {
-      super();
-      console.log('Light enter turned off state');
-    }
-    public on(sw: Switch) {
-      console.log('Switching on...');
-      sw.state = new OnState();
-    }
+  on(sw: Switch): void {
+    console.log('Switching on...');
+    sw.changeState(new OnState());
+  }
+
+  off(sw: Switch): void {
+    console.log('Light is already off');
+  }
 }
 
 class Switch {
-    constructor(
-      public state: State = new OffState()
-    ) {}
+  private state: State;
 
-    public on() {
-      this.state.on(this);
-    }
+  constructor() {
+      this.state = new OffState();
+  }
 
-    public off() {
-      this.state.off(this);
-    }
+  changeState(state: State): void {
+      this.state = state;
+  }
+
+  on(): void {
+    this.state.on(this);
+  }
+
+  off(): void {
+    this.state.off(this);
+  }
 }
 
 const sw = new Switch();
+sw.on();
+sw.on();
+sw.off();
+sw.off();
