@@ -1,70 +1,71 @@
-const enum TextProcessorType {
+enum TextProcessorType {
   Markdown,
   Html
 }
 
-class ListStrategy {
-  start(buffer: Array<String>) {}
-  end(buffer: Array<String>) {}
-  addListItem(buffer: Array<String>, item: String) {}
+abstract class ListStrategy {
+  abstract start(buffer: string[]): void;
+  abstract end(buffer: string[]): void;
+  abstract addListItem(buffer: string[], item: string): void;
 }
 
 class MarkdownListStrategy extends ListStrategy {
-  addListItem(buffer: Array<String>, item: String) {
+  start(buffer: string[]): void {}
+
+  end(buffer: string[]): void {}
+  
+  addListItem(buffer: string[], item: string): void {
     buffer.push(`* ${item}`);
   }
 }
 
 class HtmlListStrategy extends ListStrategy {
-  start(buffer: Array<String>) {
+  start(buffer: string[]): void {
     buffer.push('<ul>');
   }
 
-  end(buffer: Array<String>) {
+  end(buffer: string[]): void {
     buffer.push('</ul>');
   }
 
-  addListItem(buffer: Array<String>, item: String) {
+  addListItem(buffer: string[], item: string): void {
     buffer.push(`  <li>${item}</li>`);
   }
 }
 
 class TextProcessor {
-  private buffer: Array<String>
-  private listStrategy: ListStrategy
+  private buffer: string[] = [];
+  private listStrategy: ListStrategy;
 
-  constructor (
-    private type: TextProcessorType
-  ) {
-    this.buffer = [];
-    this.listStrategy = this.getListStrategy(type);
+  private static strategies = {
+    [TextProcessorType.Markdown]: new MarkdownListStrategy(),
+    [TextProcessorType.Html]: new HtmlListStrategy(),
+  };
+
+  constructor(private type: TextProcessorType) {
+    this.listStrategy = TextProcessor.strategies[type];
   }
 
-  getListStrategy(type: TextProcessorType): ListStrategy {
-    return {
-      [TextProcessorType.Markdown]: new MarkdownListStrategy(),
-      [TextProcessorType.Html]: new HtmlListStrategy()
-    }[type];
-  }
-
-  setListStrategy(type: TextProcessorType) {
+  setListStrategy(type: TextProcessorType): void {
     this.clear();
-    this.listStrategy = this.getListStrategy(type);
+    const strategy = TextProcessor.strategies[type];
+    if (!strategy) {
+      throw new Error(`Unsupported strategy type: ${type}`);
+    }
+    this.listStrategy = strategy;
   }
 
-  appendList(items: Array<String>) {
+  appendList(items: string[]): void {
     this.listStrategy.start(this.buffer);
-    for (let item of items) {
-      this.listStrategy.addListItem(this.buffer, item);
-    }
+    items.forEach(item => this.listStrategy.addListItem(this.buffer, item));
     this.listStrategy.end(this.buffer);
   }
 
-  clear() {
-    this.buffer = [];
+  clear(): void {
+    this.buffer.length = 0; // Clear the array while keeping the original reference
   }
 
-  toString() {
+  toString(): string {
     return this.buffer.join('\n');
   }
 }
@@ -72,8 +73,6 @@ class TextProcessor {
 const tp = new TextProcessor(TextProcessorType.Markdown);
 tp.appendList(['foo', 'bar', 'baz']);
 console.log(tp.toString());
-
-tp.clear();
 
 tp.setListStrategy(TextProcessorType.Html);
 tp.appendList(['foo', 'bar', 'baz']);
