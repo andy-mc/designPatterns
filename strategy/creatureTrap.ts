@@ -1,10 +1,21 @@
 class Creature {
-  public readonly _id: number;
+  private static readonly _idGenerator = function* () {
+    let id = 1;
+    while (true) yield id++;
+  }();
+
+  public readonly id: number;
+  private _health: number;
   public alive: Boolean;
 
-  constructor(private attack: number, private _health: number) {
-    this._id = Math.random();
+  constructor(private _attack: number, health: number) {
+    this.id = Creature._idGenerator.next().value;
+    this._health = health;
     this.alive = this._health > 0;
+  }
+
+  get attack() {
+    return this._attack;
   }
 
   get health() {
@@ -12,11 +23,8 @@ class Creature {
   }
 
   takeDamage(damage: number) {
-    this._health -= damage;
-    if (this._health <= 0) {
-      this._health = 0;
-      this.alive = false;
-    }
+    this._health = Math.max(0, this._health - damage);
+    this.alive = this._health > 0;
   }
 }
 
@@ -40,28 +48,31 @@ class ConstantDamageStrategy extends DamageStrategy {
 }
 
 class GrowingDamageStrategy extends DamageStrategy {
-  private damageByCreature: { [creatureId: number]: number };
+  private damageByCreature: Map<number, number> = new Map();
 
-  constructor() {
-    super();
-    this.damageByCreature = {};
-  }
-
-  damage(creature: Creature) {
-    if (!this.damageByCreature[creature._id]) {
-      this.damageByCreature[creature._id] = 0;
-    }
-    this.damageByCreature[creature._id] += 1;
-    creature.takeDamage(this.damageByCreature[creature._id]); 
+  damage(creature: Creature): void {
+    const currentDamage = this.damageByCreature.get(creature.id) || 0;
+    const newDamage = currentDamage + 1;
+    this.damageByCreature.set(creature.id, newDamage);
+    creature.takeDamage(newDamage); 
   }
 }
 
 const game = new Game(new GrowingDamageStrategy());
+const game2 = new Game(new ConstantDamageStrategy());
 const creature = new Creature(1, 3);
+const creature2 = new Creature(1, 3);
 console.log("creature.health:", creature.health);
+console.log("creature2.health:", creature2.health);
 game.springTrapOn(creature);
-console.log("creature.health:", creature.health);
-console.log("creature.health:", creature.alive);
+game2.springTrapOn(creature2);
+console.log("creature 1", creature.health);
+console.log("creature 1", creature.alive);
+console.log("creature 2", creature2.health);
+console.log("creature 2", creature2.alive);
 game.springTrapOn(creature);
-console.log("creature.health:", creature.health);
-console.log("creature.health:", creature.alive);
+game2.springTrapOn(creature2);
+console.log("creature 1", creature.health);
+console.log("creature 1", creature.alive);
+console.log("creature 2", creature2.health);
+console.log("creature 2", creature2.alive);
