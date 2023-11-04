@@ -1,5 +1,5 @@
 abstract class VisitorExpression {
-  abstract visitNumberExpressionTS(e: NumberExpressionTS): void;
+  abstract visitNumberExpression(e: NumberExpressionTS): void;
   abstract visitAdditionExpression(e: AdditionExpression): void;
 }
 
@@ -7,20 +7,26 @@ abstract class ExpressionTS {
   abstract accept(visitor: VisitorExpression): void;
 }
 
-class NumberExpressionTS {
-  constructor(private _value: number) {}
+// Asegurar que NumberExpressionTS hereda de ExpressionTS.
+class NumberExpressionTS extends ExpressionTS {
+  constructor(private _value: number) {
+    super();
+  }
 
   get value() {
     return this._value;
   }
 
   accept(visitor: VisitorExpression) {
-    visitor.visitNumberExpressionTS(this);
+    visitor.visitNumberExpression(this);
   }
 }
 
-class AdditionExpression {
-  constructor(private _left: ExpressionTS, private _right: ExpressionTS) {}
+// Asegurar que AdditionExpression hereda de ExpressionTS.
+class AdditionExpression extends ExpressionTS {
+  constructor(private _left: ExpressionTS, private _right: ExpressionTS) {
+    super();
+  }
 
   get left() {
     return this._left;
@@ -35,10 +41,11 @@ class AdditionExpression {
   }
 }
 
+// PrinterExpression ahora tiene un método de entrada público.
 class PrinterExpression extends VisitorExpression {
   private buffer: string[] = [];
 
-  visitNumberExpressionTS(e: NumberExpressionTS) {
+  visitNumberExpression(e: NumberExpressionTS) {
     this.buffer.push(e.value.toString());
   }
 
@@ -50,40 +57,47 @@ class PrinterExpression extends VisitorExpression {
     this.buffer.push(")");
   }
 
-  toString() {
+  private toString(): string {
     return this.buffer.join("");
+  }
+
+  // Método de entrada para iniciar la impresión.
+  print(e: ExpressionTS): string {
+    e.accept(this);
+    return this.toString();
   }
 }
 
+// CalculateExpression ahora maneja adecuadamente el estado.
 class CalculateExpression extends VisitorExpression {
-  private result = 0;
+  private resultStack: number[] = [];
 
-  visitNumberExpressionTS(e: NumberExpressionTS) {
-    this.result = e.value;
+  visitNumberExpression(e: NumberExpressionTS) {
+    this.resultStack.push(e.value);
   }
 
   visitAdditionExpression(e: AdditionExpression) {
     e.left.accept(this);
-    const temp = this.result;
     e.right.accept(this);
-    this.result += temp;
+    const right: number  = this.resultStack.pop() || 0;
+    const left: number = this.resultStack.pop() || 0;
+    this.resultStack.push(left + right);
   }
 
-  toString() {
-    return this.result.toString();
+  // Método de entrada para iniciar el cálculo.
+  calculate(e: ExpressionTS): number {
+    e.accept(this);
+    return this.resultStack.pop() || 0;
   }
 }
 
-// 1 + (2+3)
+// 1 + (2 + 3)
 const e = new AdditionExpression(
   new NumberExpressionTS(1),
   new AdditionExpression(new NumberExpressionTS(2), new NumberExpressionTS(3)),
 );
 
 const pe = new PrinterExpression();
-pe.visitAdditionExpression(e);
-
 const ce = new CalculateExpression();
-ce.visitAdditionExpression(e);
 
-console.log(`${pe.toString()} = ${ce.toString()}`);
+console.log(`${pe.print(e)} = ${ce.calculate(e)}`);
