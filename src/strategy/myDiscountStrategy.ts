@@ -1,44 +1,46 @@
 interface IDiscountStrategy {
-    getDiscount(price: number): number;
+  applyDiscount(price: number): number;
 }
 
 class DiscountByPercentage implements IDiscountStrategy {
-    constructor(private discount: number) {}
-    getDiscount(price: number): number {
-      return price - (price * (this.discount / 100));
-    }
+  constructor(private discountRate: number) {}
+
+  applyDiscount(price: number): number {
+    return price - (price * this.discountRate);
+  }
 }
 
 class DiscountHalfPrice implements IDiscountStrategy {
-    getDiscount(price: number): number {
-      return price / 2;
-    }
+  applyDiscount(price: number): number {
+    return price / 2;
+  }
 }
 
 class Product {
-    constructor(
-      private _name: string, 
-      private _price: number,
-      private discountStrategy: IDiscountStrategy
-    ) { }
-    
-    get name (): string {
-      return this._name;
-    }
+  constructor(
+    private _name: string, 
+    private _basePrice: number,
+    private discountStrategy: IDiscountStrategy
+  ) { }
+  
+  get name(): string {
+    return this._name;
+  }
 
-    get price (): number {
-      return this._price;
-    }
+  get basePrice(): number {
+    return this._basePrice;
+  }
 
-    get getDiscount (): number {
-      return this.discountStrategy.getDiscount(this._price);
-    }
+  get priceAfterDiscount(): number {
+    return this.discountStrategy.applyDiscount(this._basePrice);
+  }
 }
 
-const discount10Percent = new DiscountByPercentage(15);
-const discountHalfPrice = new DiscountHalfPrice();
+const tenPercentDiscount = new DiscountByPercentage(0.10); // 10% descuento como 0.10
+const halfPriceDiscount = new DiscountHalfPrice();
 
-const product = new Product('Laptop', 100, discount10Percent);
-console.log(product.getDiscount);
-const productB = new Product('Laptop', 100, discountHalfPrice);
-console.log(productB.getDiscount);
+const product = new Product('Laptop', 1000, tenPercentDiscount);
+console.log(`${product.name}: $${product.priceAfterDiscount}`); // Laptop: $900
+
+const productB = new Product('Laptop', 1000, halfPriceDiscount);
+console.log(`${productB.name}: $${productB.priceAfterDiscount}`); // Laptop: $500
